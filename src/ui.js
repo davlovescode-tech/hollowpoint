@@ -79,7 +79,7 @@
     document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => { document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x === b ? "true" : "false")); document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.dataset.pane === b.dataset.tab)); }));
     const ap = () => HP.game.applySettings();
     seg("qSeg", "quality", ap); rng("rngFov", "fovV", "fov", 1, v => Math.round(v), ap); sw("swFx", "fx", ap); sw("swShake", "shake", () => { HP.set.bobs = HP.set.shake; ap(); }); sw("swFps", "fps", ap);
-    rng("rngVol", "volV", "vol", 100, v => Math.round(v * 100), ap); rng("rngSens", "sensV", "sens", 100, v => v.toFixed(2), ap); sw("swAds", "adsToggle", ap); seg("xhSeg", "xhair", ap);
+    rng("rngVol", "volV", "vol", 100, v => Math.round(v * 100), ap); rng("rngSens", "sensV", "sens", 100, v => v.toFixed(2), ap); rng("rngTSens", "tsensV", "tsens", 100, v => v.toFixed(2), ap); sw("swAds", "adsToggle", ap); seg("xhSeg", "xhair", ap);
     const cc = $("xhCol"); cc.innerHTML = COLS.map(c => `<button data-c="${c}" style="background:${c}" aria-label="Crosshair colour ${c}"></button>`).join(""); cc.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; HP.set.xcol = b.dataset.c; ap(); });
     ui.applyCrosshair();
     // FPS counter

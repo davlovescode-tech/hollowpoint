@@ -20,14 +20,14 @@ HP.angDiff = (a, b) => { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= 
 HP.$ = id => document.getElementById(id);
 
 /* ---------- settings (persisted) ---------- */
-const SKEY = "hollowpoint-set-v1";
-HP.set = { quality: "auto", fov: 80, sens: 1.0, vol: 0.8, fx: true, fps: false, xhair: "dot", xcol: "#ffffff", name: "", bobs: true, shake: true, diff: "normal", bots: 5 };
+const SKEY = "hollowpoint-set-v2";
+HP.set = { quality: "auto", fov: 80, sens: 1.5, tsens: 1.0, vol: 0.8, fx: true, fps: false, xhair: "dot", xcol: "#ffffff", name: "", bobs: true, shake: true, diff: "normal", bots: 5 };
 try { Object.assign(HP.set, JSON.parse(localStorage.getItem(SKEY) || "{}")); } catch (e) { }
 HP.save = () => { try { localStorage.setItem(SKEY, JSON.stringify(HP.set)); } catch (e) { } };
 
 /* ---------- renderer / scenes ---------- */
 const canvas = HP.canvas = document.getElementById("cv");
-const renderer = HP.renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance", stencil: false });
+const renderer = HP.renderer = new T.WebGLRenderer({ canvas, antialias: (window.devicePixelRatio || 1) < 2, powerPreference: "high-performance", stencil: false });
 renderer.outputEncoding = T.sRGBEncoding;
 renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
@@ -155,6 +155,9 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hh(i)
       .replace("#include <color_fragment>", `#include <color_fragment>
 float mot=vn(vWP.xz*.21+vWP.y*.33)*.55+vn(vWP.xz*.83+vWP.y*1.3)*.45;
 diffuseColor.rgb*=.80+.40*mot;
+#ifdef USE_MAP
+{ vec2 du=vUv*5.37+vec2(.31,.77); vec3 hp=texture2D(map,du).rgb-texture2D(map,du,5.).rgb; float dfade=1.-smoothstep(5.,24.,length(vViewPosition)); diffuseColor.rgb*=1.+dot(hp,vec3(.3333))*1.25*dfade; }   // near-field detail layer: keeps close surfaces crisp instead of magnified-soft
+#endif
 ${grime ? "diffuseColor.rgb*=mix(.46,1.,smoothstep(0.,1.7,vWP.y)); diffuseColor.rgb*=mix(.82,1.,smoothstep(3.0,5.5,vWP.y)+.0);" : ""}`);
   };
   m.customProgramCacheKey = () => "hp-world-" + (grime ? 1 : 0);
@@ -184,9 +187,9 @@ HP.applyAniso = function () { Object.keys(HP.TEX).forEach(k => { const t = HP.TE
 
 /* ---------- post-processing ---------- */
 const GRADE = {
-  uniforms: { tDiffuse: { value: null }, ex: { value: 1 }, vig: { value: .4 }, sat: { value: 1.05 }, time: { value: 0 }, grain: { value: .03 }, ca: { value: .00022 }, dmg: { value: 0 }, low: { value: 0 }, flash: { value: 0 }, aspect: { value: 1 } },
+  uniforms: { tDiffuse: { value: null }, ex: { value: 1 }, vig: { value: .4 }, sat: { value: 1.05 }, time: { value: 0 }, grain: { value: .03 }, ca: { value: .00022 }, dmg: { value: 0 }, low: { value: 0 }, flash: { value: 0 }, aspect: { value: 1 }, px: { value: new T.Vector2(1 / 1280, 1 / 720) }, sharp: { value: .55 } },
   vertexShader: "varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-  fragmentShader: `uniform sampler2D tDiffuse;uniform float ex,vig,sat,time,grain,ca,dmg,low,flash,aspect;varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse;uniform float ex,vig,sat,time,grain,ca,dmg,low,flash,aspect,sharp;uniform vec2 px;varying vec2 vUv;
     vec3 RRT(vec3 v){ vec3 a=v*(v+0.0245786)-0.000090537; vec3 b=v*(0.983729*v+0.4329510)+0.238081; return a/b; }
     vec3 aces(vec3 c){ const mat3 I=mat3(vec3(0.59719,0.07600,0.02840),vec3(0.35458,0.90834,0.13383),vec3(0.04823,0.01566,0.83777)); const mat3 O=mat3(vec3(1.60475,-0.10208,-0.00327),vec3(-0.53108,1.10813,-0.07276),vec3(-0.07367,-0.00605,1.07602)); c*=ex/0.6; c=I*c; c=RRT(c); c=O*c; return clamp(c,0.0,1.0); }
     vec3 enc(vec3 c){ return mix(c*12.92,1.055*pow(c,vec3(0.41666))-0.055,step(vec3(0.0031308),c)); }
@@ -194,6 +197,8 @@ const GRADE = {
     void main(){
       vec2 d=vUv-0.5; float r2=dot(d,d);
       vec3 c; c.r=texture2D(tDiffuse,vUv+d*ca*r2*40.0).r; c.g=texture2D(tDiffuse,vUv).g; c.b=texture2D(tDiffuse,vUv-d*ca*r2*40.0).b;
+      vec3 nb=(texture2D(tDiffuse,vUv+vec2(px.x,0.)).rgb+texture2D(tDiffuse,vUv-vec2(px.x,0.)).rgb+texture2D(tDiffuse,vUv+vec2(0.,px.y)).rgb+texture2D(tDiffuse,vUv-vec2(0.,px.y)).rgb)*.25;
+      c+=clamp(c-nb,-c*.35,c*.35)*sharp;   // contrast-adaptive-style sharpen, clamped so HDR highlights do not halo
       c=aces(c);
       float l=dot(c,vec3(0.2126,0.7152,0.0722));
       // split-tone: warm highlights, cool teal shadows
@@ -252,7 +257,7 @@ HP.resize = function () {
   const w = innerWidth, h = innerHeight;
   renderer.setPixelRatio(HP.Q.pr * (HP.Q.scale || 1)); renderer.setSize(w, h, false);
   camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix(); vmCam.aspect = camera.aspect; vmCam.updateProjectionMatrix();
-  if (composer) { composer.setPixelRatio(HP.Q.pr * (HP.Q.scale || 1)); composer.setSize(w, h); if (gradePass) gradePass.uniforms.aspect.value = w / h; }
+  if (composer) { composer.setPixelRatio(HP.Q.pr * (HP.Q.scale || 1)); composer.setSize(w, h); if (gradePass) { gradePass.uniforms.aspect.value = w / h; const bs = renderer.getDrawingBufferSize(new T.Vector2()); gradePass.uniforms.px.value.set(1 / bs.x, 1 / bs.y); } }
 };
 HP.setFov = function (f) { camera.fov = f; camera.updateProjectionMatrix(); };
 HP.setPost = function (on) {
@@ -275,10 +280,11 @@ HP.applyLook = function () {
 };
 
 /* ---------- quality ---------- */
+const DPR = window.devicePixelRatio || 1;
 const QP = {
-  low: { pr: Math.min(devicePixelRatio || 1, 1), shadow: 1024, half: 30, msaa: 0, post: HP.TOUCH ? false : true, rays: 0, bloomScale: .6, aniso: 2, dust: 0.3 },
-  med: { pr: Math.min(devicePixelRatio || 1, 1.25), shadow: 2048, half: 38, msaa: 2, post: true, rays: 0.7, bloomScale: 1, aniso: 4, dust: 0.7 },
-  high: { pr: Math.min(devicePixelRatio || 1, 1.75), shadow: 4096, half: 44, msaa: 4, post: true, rays: 1, bloomScale: 1, aniso: 16, dust: 1 },
+  low: { pr: Math.min(DPR, HP.TOUCH ? 2 : 1.5), shadow: 1024, half: 30, msaa: 0, post: HP.TOUCH ? false : true, rays: 0, bloomScale: .6, aniso: 8, dust: 0.3 },
+  med: { pr: Math.min(DPR, 2), shadow: 2048, half: 38, msaa: 2, post: true, rays: 0.7, bloomScale: 1, aniso: 8, dust: 0.7 },
+  high: { pr: Math.min(Math.max(DPR, 1.25), 2.25), shadow: 4096, half: 44, msaa: 4, post: true, rays: 1, bloomScale: 1, aniso: 16, dust: 1 },
 };
 HP.setQuality = function (name, silent) {
   HP.qName = name; let k = name === "auto" ? (HP.autoLevel || (HP.TOUCH ? "low" : "high")) : name; if (!QP[k]) k = "med";
@@ -290,14 +296,19 @@ HP.setQuality = function (name, silent) {
   if (!silent && HP.ev.quality) HP.ev.quality(k);
 };
 /* adaptive resolution: keeps the frame rate smooth by nudging render scale */
-let _acc = 0, _n = 0, _t0 = 0, _lowCnt = 0;
+let _acc = 0, _n = 0, _bad = 0, _good = 0;
 HP.adapt = function (dt) {
-  _acc += dt; _n++; if (_acc < 1.5) return;
+  _acc += dt; _n++; if (_acc < 2) return;
   const fps = _n / _acc; _acc = 0; _n = 0; HP.fps = fps;
-  if (HP.qName !== "auto" && !HP.set.adaptive) return;
-  if (fps < 38 && HP.Q.scale > 0.62) { HP.Q.scale = Math.max(0.6, HP.Q.scale - 0.12); HP.resize(); _lowCnt++; }
-  else if (fps > 58 && HP.Q.scale < 1) { HP.Q.scale = Math.min(1, HP.Q.scale + 0.06); HP.resize(); }
-  if (HP.qName === "auto" && _lowCnt >= 3 && HP.Q.level !== "low") { HP.autoLevel = HP.Q.level === "high" ? "med" : "low"; _lowCnt = 0; HP.Q.scale = 1; HP.setQuality("auto"); }
+  if (HP.qName !== "auto") return;
+  // sharpness comes first: shed effects (rays, MSAA, shadow res, post) before ever touching resolution
+  if (fps < 30) { _bad++; _good = 0; } else if (fps > 50) { _good++; _bad = 0; } else { _bad = Math.max(0, _bad - 1); }
+  if (_bad >= 2) {
+    _bad = 0;
+    if (HP.Q.level === "high") { HP.autoLevel = "med"; HP.setQuality("auto"); }
+    else if (HP.Q.level === "med") { HP.autoLevel = "low"; HP.setQuality("auto"); }
+    else if ((HP.Q.scale || 1) > 0.86) { HP.Q.scale = Math.max(0.85, (HP.Q.scale || 1) - 0.07); HP.resize(); }
+  } else if (_good >= 6 && (HP.Q.scale || 1) < 1) { HP.Q.scale = Math.min(1, HP.Q.scale + 0.05); HP.resize(); _good = 0; }
 };
 
 /* ---------- render ---------- */

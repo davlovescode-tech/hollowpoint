@@ -232,7 +232,7 @@
   function updateLocal(dt) {
     const me = G.me, pl = me.pl, cam = HP.camera, W = HP.World, d = HP.WEAPONS[pl.cur], VM = HP.vm, A = HP.audio;
     // ---- look
-    const sens = 0.0022 * HP.set.sens; const adsK = VM.ads || 0; const zoomK = lerp(1, 1 / d.zoom, adsK);
+    const sens = HP.TOUCH ? 0.0062 * HP.set.tsens : 0.0026 * HP.set.sens; const adsK = VM.ads || 0; const zoomK = lerp(1, Math.pow(1 / d.zoom, 0.8), adsK);
     pl.lx = G.mdx * sens * zoomK; pl.ly = G.mdy * sens * zoomK; G.mdx = G.mdy = 0;
     if (me.alive && G.locked && !G.match.over) { me.yaw -= pl.lx; me.pitch = clamp(me.pitch - pl.ly, -1.52, 1.52); }
     // ---- cooldowns / spawn protect
@@ -435,7 +435,7 @@
   }
 
   /* ================= pointer lock + input ================= */
-  function lockPointer() { if (HP.TOUCH) { G.locked = true; return; } try { const r = HP.canvas.requestPointerLock(); if (r && r.catch) r.catch(() => { }); } catch (e) { } }
+  function lockPointer() { if (HP.TOUCH) { G.locked = true; return; } try { let r; try { r = HP.canvas.requestPointerLock({ unadjustedMovement: true }); } catch (e) { r = HP.canvas.requestPointerLock(); } if (r && r.catch) r.catch(() => { try { HP.canvas.requestPointerLock(); } catch (_) { } }); } catch (e) { } }
   G.lock = lockPointer;
   document.addEventListener("pointerlockchange", () => {
     G.locked = document.pointerLockElement === HP.canvas;
@@ -472,7 +472,7 @@
     const el = HP.$("touch"); if (!el) return; const stick = HP.$("tstick"), knob = HP.$("tknob"); let sid = null, lid = null, sx = 0, sy = 0, lx = 0, ly = 0; const SR = 52;
     const mv = (x, y) => { let dx = x - sx, dy = y - sy; const l = Math.hypot(dx, dy); if (l > SR) { dx = dx / l * SR; dy = dy / l * SR; } knob.style.transform = `translate(${dx}px,${dy}px)`; keys.KeyW = dy < -12; keys.KeyS = dy > 12; keys.KeyA = dx < -12; keys.KeyD = dx > 12; keys.ShiftLeft = dy < -SR * 0.92; };
     el.addEventListener("touchstart", e => { for (const t of e.changedTouches) { const tg = t.target; if (tg.dataset && tg.dataset.btn) continue; if (t.clientX < innerWidth * 0.4 && sid == null) { sid = t.identifier; const r = stick.getBoundingClientRect(); sx = r.left + r.width / 2; sy = r.top + r.height / 2; mv(t.clientX, t.clientY); } else if (lid == null) { lid = t.identifier; lx = t.clientX; ly = t.clientY; } } e.preventDefault(); }, { passive: false });
-    el.addEventListener("touchmove", e => { for (const t of e.changedTouches) { if (t.identifier === sid) mv(t.clientX, t.clientY); else if (t.identifier === lid) { G.mdx += (t.clientX - lx) * 1.6; G.mdy += (t.clientY - ly) * 1.6; lx = t.clientX; ly = t.clientY; } } e.preventDefault(); }, { passive: false });
+    el.addEventListener("touchmove", e => { for (const t of e.changedTouches) { if (t.identifier === sid) mv(t.clientX, t.clientY); else if (t.identifier === lid) { const ddx = t.clientX - lx, ddy = t.clientY - ly, acc = 1 + Math.min(Math.hypot(ddx, ddy) / 26, 1) * 0.75; G.mdx += ddx * acc; G.mdy += ddy * acc; lx = t.clientX; ly = t.clientY; } } e.preventDefault(); }, { passive: false });
     const end = e => { for (const t of e.changedTouches) { if (t.identifier === sid) { sid = null; knob.style.transform = ""; keys.KeyW = keys.KeyS = keys.KeyA = keys.KeyD = keys.ShiftLeft = false; } else if (t.identifier === lid) lid = null; } };
     el.addEventListener("touchend", end); el.addEventListener("touchcancel", end);
     const bind = (id, down, up) => { const b = HP.$(id); if (!b) return; b.addEventListener("touchstart", e => { e.preventDefault(); e.stopPropagation(); down(); }, { passive: false }); b.addEventListener("touchend", e => { e.preventDefault(); up && up(); }, { passive: false }); };
