@@ -4,22 +4,29 @@
 
 A free, instant-play browser FPS with a realistic tactical look: golden-hour desert compound, real-time sun shadows, image-based reflections, PBR materials, volumetric god-rays, filmic colour grade. No download, no account, no build step.
 
-- **Play solo** vs AI bots right away, three difficulties.
-- **Play with friends**: create a room, share the 5-letter code, up to 6 humans + bots (peer-to-peer over WebRTC, the host runs the match).
+- **Team Deathmatch:** ALPHA vs BRAVO, first team to 40 kills or the highest score at 7:00. Bots fill the smaller team, no friendly fire, team-aware spawns.
+- **Play solo** vs AI bots right away, three difficulties (default 8 players: you + 7 bots).
+- **Play with friends**: create a room, share the 5-letter code, up to 6 humans + bots (peer-to-peer over WebRTC, the host runs the match). Teams, scores and streaks sync to everyone.
+- **Loadouts:** pick a primary (ARC-7 rifle, VIPER-9 SMG, HAMMER-12 shotgun, LONGSHOT-50 sniper) plus the SIDEKICK .45, and a perk: **Juggernaut** (130 HP), **Fast Hands** (faster reloads) or **Ghost** (invisible to radar and UAV).
+- **Scorestreaks:** 3-kill streak earns a **UAV** (28 s full-team radar), 6-kill streak an **Airstrike** (7 blasts on an enemy position). Streaks repeat every 3 kills.
+- **Radar:** rotating minimap; teammates always shown, enemies when they fire or under UAV.
+- **Movement:** sprint, **slide** (sprint then crouch), jump, crouch, ADS slow-down, health regen after 3 s out of combat.
+- **Feedback:** hit markers, headshot / kill popups, kill feed, damage direction indicators, team scoreboard and victory / defeat screen.
 - **Map:** KILN YARD, a walled brick-kiln compound with a market, container yard, garage block, watchtower and rooftop routes.
-- **Arsenal:** ARC-7 rifle, VIPER-9 SMG, HAMMER-12 shotgun, LONGSHOT-50 bolt sniper (real scope), SIDEKICK .45. Headshots, damage falloff, bloom, recoil, reload animations.
-- Desktop (mouse + keyboard) and phones/tablets (touch controls, landscape).
+- Desktop (mouse + keyboard) and phones/tablets (touch controls, landscape, separate touch sensitivity).
 
 ## Controls
 
 | | |
 |---|---|
 | Move | `W A S D` · Sprint `Shift` · Crouch `C` / `Ctrl` · Jump `Space` |
+| Slide | Sprint, then crouch |
 | Shoot / Aim | Left mouse / Right mouse (hold, or toggle in settings) |
 | Reload | `R` |
-| Weapons | `1`-`5`, mouse wheel, `Q` swap |
+| Weapons | `1`-`2`, mouse wheel, `Q` swap |
+| Use scorestreak | `G` (phone: the streak button) |
 | Scoreboard | `Tab` (hold) |
-| Pause / settings | `Esc` |
+| Pause / settings | `Esc` (sensitivity, touch sensitivity, quality, volume) |
 
 ## Run locally
 
@@ -36,7 +43,7 @@ Import the repo into Vercel (or any static host: Netlify, GitHub Pages, Cloudfla
 
 ## Graphics
 
-Quality presets **Low / Medium / High / Auto** (Auto adapts resolution to hold frame rate). High turns on 4096 shadow maps, HDR bloom, god-rays and the full grade. Phones default to a lighter path.
+Quality presets **Low / Medium / High / Auto** (Auto adapts resolution but never drops below 85% of native, so the image stays sharp). Every preset renders at the screen's native pixel ratio and adds a sharpening pass, anisotropic filtering and a fine near-field detail layer on surfaces. High turns on 4096 shadow maps, HDR bloom, god-rays and the full grade. Phones default to a lighter path.
 
 - Procedural sky shader baked to a PMREM environment map; the same sun drives lighting, fog and shadows.
 - Texel-snapped cascaded-style shadow frustum that follows the player (no shimmer).
@@ -64,7 +71,7 @@ The host is authoritative for damage, kills, respawns and the match clock. Guest
 index.html, style.css, config.js
 src/core.js     renderer, sky, shadows, post chain, materials, settings
 src/map.js      KILN YARD geometry, colliders, nav grid, spawns
-src/game.js     player controller, combat, match flow, host/guest sync
+src/game.js     player controller, team deathmatch, loadouts, scorestreaks, radar, host/guest sync
 src/bots.js     AI (A* navigation, line-of-sight, difficulty tuning)
 src/weapons.js  weapon stats + procedural first-person models and animation
 src/chars.js    soldier rig, tinting, IK, third-person guns
