@@ -93,6 +93,8 @@
     else if (kind === "pump") { noiseHit(o, t, 0.002, 0.07, "bandpass", 1400, 600, 2, 0.8); noiseHit(o, t + 0.14, 0.002, 0.08, "bandpass", 1600, 700, 2, 0.8); tone(o, t + 0.14, "square", 300, 150, 0.001, 0.05, 0.12); }
     else if (kind === "bolt") { noiseHit(o, t, 0.002, 0.07, "bandpass", 1500, 700, 2, 0.8); noiseHit(o, t + 0.2, 0.002, 0.09, "bandpass", 1900, 800, 2, 0.8); }
   };
+  A.boom = function (x, y, z) { if (!ctx || !A.on) return; const t = ctx.currentTime, o = bus(x, y, z, 1.6, 0.9); noiseHit(o, t, 0.004, 0.5, "lowpass", 1800, 120, 0.7, 1.0); noiseHit(o, t, 0.002, 0.12, "bandpass", 2600, 600, 1.2, 0.8); tone(o, t, "sine", 78, 26, 0.004, 0.9, 1.3); tone(o, t + 0.02, "triangle", 140, 40, 0.004, 0.5, 0.7); noiseHit(o, t + 0.25, 0.2, 1.4, "lowpass", 500, 90, 0.7, 0.45); };
+  A.slide = function () { if (!ctx || !A.on) return; const t = ctx.currentTime, o = bus(null, 0, 0, 0.6); noiseHit(o, t, 0.03, 0.55, "bandpass", 1100, 260, 0.9, 0.35); };
   A.equip = function () { if (!ctx || !A.on) return; const t = ctx.currentTime, o = bus(null, 0, 0, 0.5); noiseHit(o, t, 0.003, 0.08, "bandpass", 900, 500, 1.2, 0.6); noiseHit(o, t + 0.09, 0.001, 0.04, "bandpass", 2200, 1200, 3, 0.4); };
   A.step = function (x, y, z, run, vol) { if (!ctx || !A.on) return; const t = ctx.currentTime, o = bus(x, y, z, (vol == null ? 1 : vol) * (run ? 0.9 : 0.55), 0.08); noiseHit(o, t, 0.002, 0.07, "lowpass", 900 * R(0.8, 1.2), 300, 0.6, 0.7); noiseHit(o, t, 0.001, 0.025, "highpass", 3000, null, 0.5, 0.18); };
   A.jump = function (x, y, z) { if (!ctx || !A.on) return; const o = bus(x, y, z, x == null ? 0.5 : 0.8); noiseHit(o, ctx.currentTime, 0.004, 0.1, "lowpass", 700, 300, 0.7, 0.5); };

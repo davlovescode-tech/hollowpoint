@@ -171,6 +171,13 @@
     for (let i = 0; i < 4; i++) FX.spark.emit({ x, y, z, vx: dx * R(0.5, 3) + R(-1.5, 1.5), vy: R(0, 2.5), vz: dz * R(0.5, 3) + R(-1.5, 1.5), life: R(0.15, 0.35), s0: 0.03, s1: 0.01, r: 1, g: 0.25, b: 0.12, a: 1, grav: 10, drag: 0.6 });
   };
   FX.puffAt = function (x, y, z, r, g, b, s, n) { for (let i = 0; i < (n || 5); i++) FX.puff.emit({ x: x + R(-0.2, 0.2), y: y + R(0, 0.1), z: z + R(-0.2, 0.2), vx: R(-1, 1), vy: R(0.2, 1), vz: R(-1, 1), life: R(0.7, 1.4), s0: s * 0.4, s1: s * 1.5, r, g, b, a: 0.55, drag: 1.6 }); };
+  FX.explosion = function (x, y, z) {
+    for (let i = 0; i < 16; i++) FX.spark.emit({ x: x + R(-0.5, 0.5), y: y + R(0.2, 1.4), z: z + R(-0.5, 0.5), vx: R(-3, 3), vy: R(1, 6), vz: R(-3, 3), life: R(0.25, 0.65), s0: 1.0, s1: 0.25, r: 1, g: R(0.45, 0.75), b: 0.18, a: 0.85, drag: 2.2 });
+    for (let i = 0; i < 24; i++) FX.puff.emit({ x: x + R(-1, 1), y: y + R(0, 0.8), z: z + R(-1, 1), vx: R(-3, 3), vy: R(1.5, 7), vz: R(-3, 3), life: R(1.4, 3.0), s0: 0.8, s1: R(3, 5.5), r: 0.26, g: 0.23, b: 0.2, a: 0.55, drag: 1.1 });
+    for (let i = 0; i < 18; i++) { const a = Math.random() * 6.283, sp = R(4, 9); FX.puff.emit({ x, y: 0.2, z, vx: Math.cos(a) * sp, vy: R(0.2, 0.8), vz: Math.sin(a) * sp, life: R(1, 2.1), s0: 0.6, s1: R(2, 3.4), r: 0.76, g: 0.6, b: 0.42, a: 0.5, drag: 1.7 }); }
+    for (let i = 0; i < 22; i++) FX.spark.emit({ x, y: y + 0.3, z, vx: R(-9, 9), vy: R(3, 12), vz: R(-9, 9), life: R(0.4, 0.9), s0: 0.05, s1: 0.015, r: 1, g: 0.5, b: 0.15, a: 1, grav: 14, drag: 0.3 });
+    FX.flashAt(x, y + 1.2, z, 9);
+  };
   FX.land = function (x, z, force) { FX.puffAt(x, 0.05, z, 0.8, 0.62, 0.4, 0.45 + force * 0.1, 4); };
   FX.step = function (x, z, run) { FX.puff.emit({ x, y: 0.04, z, vx: R(-0.3, 0.3), vy: R(0.1, 0.5), vz: R(-0.3, 0.3), life: R(0.5, 0.9), s0: 0.1, s1: run ? 0.4 : 0.25, r: 0.78, g: 0.62, b: 0.42, a: run ? 0.3 : 0.18, drag: 2 }); };
   FX.clearAll = function () { FX.decals.clear(); FX.tracers.list.length = 0; };

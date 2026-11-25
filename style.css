@@ -201,3 +201,33 @@ html.touch #ammo .rl{height:12px;margin-top:2px}
 html.touch #feed{top:calc(14px + var(--safe-t));right:calc(64px + var(--safe-r))}
 html.touch #tpause{top:calc(14px + var(--safe-t))}
 @media (orientation:portrait){html.touch #touch:not([hidden]):after{content:"Rotate your phone to landscape to play";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 12vw;background:rgba(8,6,4,.88);font:800 18px/1.4 Inter;letter-spacing:.04em;color:var(--ink)}}
+
+/* ---------- v1.1 · Team Deathmatch HUD ---------- */
+.t0{color:#79b4ff}.t1{color:#ff9560}
+#radar{position:absolute;left:calc(16px + var(--safe-l));top:calc(16px + var(--safe-t));width:156px;height:156px;pointer-events:none;filter:drop-shadow(0 6px 16px rgba(0,0,0,.55))}
+#topc .you b,#topc .you small{color:var(--ally,#79b4ff)}#topc .lead b,#topc .lead small{color:var(--foe,#ff9560)}
+#topc .you{box-shadow:inset 0 -3px 0 var(--ally,#79b4ff)}#topc .lead{box-shadow:inset 0 -3px 0 var(--foe,#ff9560)}
+#topc small{max-width:none}
+#toasts{top:24%}
+#popups{position:absolute;left:50%;top:61%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
+#popups div{display:flex;align-items:baseline;gap:10px;animation:pp 1.7s ease-out both;text-shadow:0 2px 12px rgba(0,0,0,.85)}
+#popups b{font:italic 900 24px/1 "Inter Display",Inter;color:var(--amber)}#popups span{font:800 12px Inter;letter-spacing:.16em;color:#fff}#popups .hs b{color:#ff6a55}
+@keyframes pp{0%{opacity:0;transform:translateY(8px) scale(.85)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+#streak{position:absolute;left:50%;bottom:calc(24px + var(--safe-b));transform:translateX(-50%);display:none;align-items:center;gap:10px;padding:8px 16px;border-radius:12px;background:rgba(14,10,7,.62);border:1px solid var(--line2);backdrop-filter:blur(8px);pointer-events:none}
+#streak.on{display:flex}#streak b{font:800 12.5px Inter;letter-spacing:.16em;color:#79b4ff}#streak small{font:700 11.5px Inter;color:var(--dim)}
+#streak.ready{border-color:rgba(255,177,92,.8);animation:rdy 1.1s ease-in-out infinite}#streak.ready b{color:var(--amber)}
+@keyframes rdy{50%{box-shadow:0 0 0 4px rgba(255,177,92,.22)}}
+#board .th td{font:800 11px Inter;letter-spacing:.2em;padding:12px 8px 5px;border-top:1px solid var(--line)}#board .th.t0 td{color:#79b4ff}#board .th.t1 td{color:#ff9560}#board .th b{margin-left:12px;font-size:16px;color:inherit}
+#feed .t0,#feed .t1{font-weight:800}
+.plist span.t0{border-color:rgba(121,180,255,.6)}.plist span.t1{border-color:rgba(255,149,96,.6)}
+.tscore{display:flex;justify-content:center;align-items:baseline;gap:18px;font:800 15px Inter;letter-spacing:.14em;margin:4px 0 14px}.tscore b{font:italic 900 40px/1 "Inter Display",Inter;margin:0 6px}.tscore i{opacity:.35;font-style:normal}
+.td{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:9px}.td.t0{background:#79b4ff}.td.t1{background:#ff9560}
+.loadout{display:flex;flex-direction:column;gap:7px;margin:12px 0 4px}.loadout .seg{display:flex}.loadout .seg button{flex:1;padding:0 4px;font-size:11.5px;white-space:nowrap}
+.perkd{font:600 11.5px/1.35 Inter;color:var(--mute);min-height:15px;text-align:center}
+.dlo{display:flex;gap:8px;justify-content:center;margin-top:16px;pointer-events:auto}.dlo button{height:34px;padding:0 13px;border-radius:9px;background:rgba(14,10,7,.62);border:1px solid var(--line);font:800 12px Inter;color:var(--dim)}.dlo button b{display:inline;font:800 11px Inter;margin-right:6px;color:var(--mute)}.dlo button.on{border-color:rgba(255,177,92,.8);color:var(--amber)}
+#touch #tks{right:calc(122px + var(--safe-r));bottom:170px;width:62px;height:62px;border-radius:50%;background:rgba(121,180,255,.28);border:2px solid rgba(121,180,255,.85);font:800 11px Inter;letter-spacing:.06em;animation:rdy 1.1s ease-in-out infinite}
+html.touch #radar{width:112px;height:112px}
+html.touch #hp{top:calc(136px + var(--safe-t));width:112px}
+html.touch #streak{bottom:calc(78px + var(--safe-b))}
+html.touch #popups{top:58%}
+@media (max-width:640px){#radar{width:104px;height:104px}}

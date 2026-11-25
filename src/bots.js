@@ -9,9 +9,9 @@
   const clamp = HP.clamp, R = HP.rnd;
   const NAMES = ["Ghost", "KiloFox", "Dusty", "Mamba", "Razor", "Nomad", "Vector", "Falcon", "Ironside", "Tango", "Sandstorm", "Bishop", "Cobra", "Maverick", "Zephyr", "Reaper", "Hawk", "Rook", "Saber", "Echo", "Onyx", "Phantom", "Bolt", "Jackal", "Titan", "Wraith", "Nova", "Atlas", "Havoc", "Drifter", "Kestrel", "Mirage"];
   const DIFF = {
-    easy: { react: 0.8, turn: 3.0, acc: 3.8, dmg: 0.55, rate: 0.55, speed: 3.7, head: 0.08, think: 0.3 },
-    normal: { react: 0.48, turn: 5.0, acc: 2.3, dmg: 0.75, rate: 0.75, speed: 4.4, head: 0.2, think: 0.22 },
-    hard: { react: 0.26, turn: 8.2, acc: 1.25, dmg: 1.0, rate: 0.95, speed: 5.1, head: 0.38, think: 0.16 },
+    easy: { react: 0.75, turn: 3.4, acc: 3.6, dmg: 0.55, rate: 0.6, speed: 4.1, head: 0.08, think: 0.28 },
+    normal: { react: 0.4, turn: 6.2, acc: 2.0, dmg: 0.8, rate: 0.8, speed: 4.9, head: 0.22, think: 0.2 },
+    hard: { react: 0.22, turn: 9.0, acc: 1.15, dmg: 1.0, rate: 0.95, speed: 5.6, head: 0.4, think: 0.14 },
   };
   const PREF = { arc7: 20, viper: 12, hammer: 7, longshot: 42, sidekick: 14 };
   const WPICK = [["arc7", 38], ["viper", 24], ["hammer", 16], ["sidekick", 9], ["longshot", 13]];
@@ -30,6 +30,11 @@
   function eyeOf(e) { return e.y + (e.crouch ? 1.12 : 1.58); }
   function pickGoal(e, G) {
     const W = HP.World, sp = W.spawns; let best = null;
+    // like a radar ping: most of the time head for where the other team is, so fights find each other fast
+    if (Math.random() < 0.65) {
+      const foes = []; G.ents.forEach(t => { if (t.alive && t.team !== e.team) foes.push(t); });
+      if (foes.length) { const t = foes[Math.floor(Math.random() * foes.length)]; let bd = 1e9; for (let i = 0; i < 12; i++) { const s = sp[Math.floor(Math.random() * sp.length)]; const d = Math.hypot(s.x - t.x, s.z - t.z); if (d < bd && Math.hypot(s.x - e.x, s.z - e.z) > 6) { bd = d; best = s; } } if (best) return { x: best.x + R(-1.5, 1.5), z: best.z + R(-1.5, 1.5) }; }
+    }
     for (let i = 0; i < 6; i++) { const s = sp[Math.floor(Math.random() * sp.length)]; const d = Math.hypot(s.x - e.x, s.z - e.z); if (d > 9 && (!best || Math.random() < 0.5)) best = s; }
     best = best || sp[0]; return { x: best.x + R(-1.5, 1.5), z: best.z + R(-1.5, 1.5) };
   }
@@ -46,7 +51,7 @@
     if (a.think <= 0) {
       a.think = d.think * R(0.8, 1.25); let best = null, bd = 1e9; const ex = e.x, ez = e.z, ey = eyeOf(e);
       G.ents.forEach(t => {
-        if (t === e || !t.alive || t.spawnProt > 0.3) return; const dx = t.x - ex, dz = t.z - ez, dist = Math.hypot(dx, dz); if (dist > (e.w === "longshot" ? 90 : 62)) return;
+        if (t === e || !t.alive || t.team === e.team || t.spawnProt > 0.3) return; const dx = t.x - ex, dz = t.z - ez, dist = Math.hypot(dx, dz); if (dist > (e.w === "longshot" ? 90 : 62)) return;
         const fa = Math.abs(HP.angDiff(e.yaw, Math.atan2(-dx, -dz))); const noticed = fa < 1.75 || dist < 7 || (a.alertT > 0) || (G.now - (t.lastFireT || -9) < 1.0 && dist < 38);
         if (!noticed) return; const ty = t.y + (t.crouch ? 0.8 : 1.3);
         if (W.clear(ex, ey, ez, t.x, ty, t.z) && dist < bd) { bd = dist; best = t; }

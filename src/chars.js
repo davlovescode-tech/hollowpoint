@@ -7,7 +7,7 @@
 (function () {
   const T = THREE, clamp = HP.clamp;
   const C = HP.chars = { ready: false, proto: null, clips: {}, scale: 1, tp: {} };
-  const TINTS = [0x6f7a5a, 0xb59a6e, 0x5d7186, 0x45484d, 0x8a4a42, 0x4e6b4a, 0xa88a58, 0x6a6475];
+  const TINTS = [0x37639e, 0xb34a2a, 0x6f7a5a, 0xb59a6e, 0x5d7186, 0x45484d, 0x4e6b4a, 0x6a6475];   // [0] ALPHA blue, [1] BRAVO orange
   C.TINTS = TINTS;
 
   C.load = function (onProg) {
@@ -58,7 +58,7 @@
     // nameplate
     const cv = document.createElement("canvas"); cv.width = 256; cv.height = 48; s.npCv = cv; const tx = new T.CanvasTexture(cv); tx.anisotropy = 4;
     s.np = new T.Sprite(new T.SpriteMaterial({ map: tx, transparent: true, depthWrite: false, fog: false })); s.np.scale.set(1.3, 0.24, 1); s.np.position.y = 2.15; s.np.renderOrder = 12; root.add(s.np); s.npName = "";
-    s.setName = n => { if (s.npName === n) return; s.npName = n; const g = cv.getContext("2d"); g.clearRect(0, 0, 256, 48); g.font = "700 28px Inter, Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 6; g.strokeStyle = "rgba(0,0,0,0.65)"; g.strokeText(n, 128, 25); g.fillStyle = "#f4ead6"; g.fillText(n, 128, 25); tx.needsUpdate = true; };
+    s.setName = (n, col) => { const key = n + "|" + (col || ""); if (s.npName === key) return; s.npName = key; const g = cv.getContext("2d"); g.clearRect(0, 0, 256, 48); g.font = "700 28px Inter, Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 6; g.strokeStyle = "rgba(0,0,0,0.65)"; g.strokeText(n, 128, 25); g.fillStyle = col || "#f4ead6"; g.fillText(n, 128, 25); tx.needsUpdate = true; };
     s.dead = false; s.deadT = 0;
     return s;
   };
@@ -95,7 +95,7 @@
     s.gunHolder.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(up, -(e.yaw + Math.PI))); s.gunHolder.scale.set(1, 1 / cs, 1);
     // head looks along the aim
     if (b.Head && e.pitch) { b.Neck && (b.Neck.rotation.x += 0); }
-    s.np.visible = true;
+    s.np.visible = !!e.npShow;
   };
   C.dispose = function (s) { s.root.parent && s.root.parent.remove(s.root); };
 })();

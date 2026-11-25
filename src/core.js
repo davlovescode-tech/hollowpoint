@@ -21,7 +21,7 @@ HP.$ = id => document.getElementById(id);
 
 /* ---------- settings (persisted) ---------- */
 const SKEY = "hollowpoint-set-v2";
-HP.set = { quality: "auto", fov: 80, sens: 1.5, tsens: 1.0, vol: 0.8, fx: true, fps: false, xhair: "dot", xcol: "#ffffff", name: "", bobs: true, shake: true, diff: "normal", bots: 5 };
+HP.set = { quality: "auto", fov: 80, sens: 1.5, tsens: 1.0, vol: 0.8, fx: true, fps: false, xhair: "dot", xcol: "#ffffff", name: "", bobs: true, shake: true, diff: "normal", bots: 7 };
 try { Object.assign(HP.set, JSON.parse(localStorage.getItem(SKEY) || "{}")); } catch (e) { }
 HP.save = () => { try { localStorage.setItem(SKEY, JSON.stringify(HP.set)); } catch (e) { } };
 
@@ -156,7 +156,7 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hh(i)
 float mot=vn(vWP.xz*.21+vWP.y*.33)*.55+vn(vWP.xz*.83+vWP.y*1.3)*.45;
 diffuseColor.rgb*=.80+.40*mot;
 #ifdef USE_MAP
-{ vec2 du=vUv*5.37+vec2(.31,.77); vec3 hp=texture2D(map,du).rgb-texture2D(map,du,5.).rgb; float dfade=1.-smoothstep(5.,24.,length(vViewPosition)); diffuseColor.rgb*=1.+dot(hp,vec3(.3333))*1.25*dfade; }   // near-field detail layer: keeps close surfaces crisp instead of magnified-soft
+{ vec2 du=vUv*5.37+vec2(.31,.77); vec3 hp=texture2D(map,du).rgb-texture2D(map,du,5.).rgb; float dfade=1.-smoothstep(5.,24.,length(vViewPosition)); diffuseColor.rgb*=1.+dot(hp,vec3(.3333))*0.7*dfade; }   // near-field detail layer: keeps close surfaces crisp instead of magnified-soft
 #endif
 ${grime ? "diffuseColor.rgb*=mix(.46,1.,smoothstep(0.,1.7,vWP.y)); diffuseColor.rgb*=mix(.82,1.,smoothstep(3.0,5.5,vWP.y)+.0);" : ""}`);
   };
